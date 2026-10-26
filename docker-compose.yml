@@ -1,0 +1,30 @@
+version: "3.8"
+
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: techdoc-backend
+    ports:
+      - "8000:8000"
+    environment:
+      - ENVIRONMENT=production
+      - JWT_SECRET=techdoc-super-secret-key-prod-2026
+      - DATABASE_URL=sqlite:///./backend/data/techdoc_ai.db
+      - ADMIN_EMAIL=admin@techdoc.ai
+      - ADMIN_PASSWORD=AdminPass123!
+    volumes:
+      - ./backend/data:/app/backend/data
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: techdoc-frontend
+    ports:
+      - "5173:80"
+    depends_on:
+      - backend
+    restart: unless-stopped

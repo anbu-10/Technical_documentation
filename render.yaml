@@ -1,0 +1,51 @@
+services:
+  # ---------------------------------------------------------
+  # 1. FastAPI Backend Web Service
+  # ---------------------------------------------------------
+  - type: web
+    name: techdoc-ai-backend
+    runtime: python
+    region: oregon
+    plan: free
+    buildCommand: "pip install --upgrade pip && pip install -r requirements.txt"
+    startCommand: "uvicorn backend.main:app --host 0.0.0.0 --port $PORT"
+    healthCheckPath: /health
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.9
+      - key: ENVIRONMENT
+        value: production
+      - key: JWT_SECRET
+        generateValue: true
+      - key: DEFAULT_PROVIDER
+        value: auto
+      - key: EMBEDDING_MODEL_NAME
+        value: all-MiniLM-L6-v2
+      - key: ADMIN_EMAIL
+        value: admin@techdoc.ai
+      - key: ADMIN_PASSWORD
+        value: AdminPass123!
+      - key: DATABASE_URL
+        value: sqlite:///./backend/data/techdoc_ai.db
+
+  # ---------------------------------------------------------
+  # 2. Vite React Frontend Static Site
+  # ---------------------------------------------------------
+  - type: web
+    name: techdoc-ai-frontend
+    runtime: static
+    region: oregon
+    plan: free
+    rootDir: frontend
+    buildCommand: "npm install && npm run build"
+    staticPublishPath: ./dist
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
+    envVars:
+      - key: VITE_API_URL
+        fromService:
+          type: web
+          name: techdoc-ai-backend
+          property: host

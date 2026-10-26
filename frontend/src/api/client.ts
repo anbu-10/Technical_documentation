@@ -1,4 +1,6 @@
-const API_BASE = "http://localhost:8000/api";
+const envApiUrl = import.meta.env.VITE_API_URL;
+const rawBase = envApiUrl ? (envApiUrl.startsWith("http") ? envApiUrl : `https://${envApiUrl}`) : "http://localhost:8000";
+const API_BASE = rawBase.endsWith("/api") ? rawBase : `${rawBase.replace(/\/$/, "")}/api`;
 
 export interface UserDetail {
   id: string;
