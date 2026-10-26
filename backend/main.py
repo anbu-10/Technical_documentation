@@ -226,10 +226,16 @@ def import_json_dumps(obj):
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # Startup: create tables
+    # Startup: create tables and quick user setup
     Base.metadata.create_all(bind=engine)
     provision_initial_users()
-    seed_sample_technical_documents()
+    
+    # Run heavy document parsing, chunking, and embeddings in background thread
+    # This guarantees the server binds to $PORT in <1 second, preventing Render port scan timeouts
+    import threading
+    seeding_thread = threading.Thread(target=seed_sample_technical_documents, daemon=True)
+    seeding_thread.start()
+    
     yield
     # Shutdown
 
@@ -269,3 +275,9 @@ def health_check():
         "version": settings.APP_VERSION,
         "environment": settings.ENVIRONMENT
     }
+
+if __name__ == "__main__":
+    import uvicorn
+    port = int(os.environ.get("PORT", 8000))
+    uvicorn.run("backend.main:app", host="0.0.0.0", port=port)
+
