@@ -8,6 +8,11 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     curl \
     && rm -rf /var/lib/apt/lists/*
 
+# Set up virtual environment to avoid root user pip warnings
+ENV VIRTUAL_ENV=/opt/venv
+RUN python3 -m venv $VIRTUAL_ENV
+ENV PATH="$VIRTUAL_ENV/bin:$PATH"
+
 # Install Python requirements
 COPY requirements.txt .
 RUN pip install --no-cache-dir --upgrade pip && \
