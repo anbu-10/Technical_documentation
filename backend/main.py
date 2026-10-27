@@ -1,4 +1,5 @@
 import os
+import time
 from pathlib import Path
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
@@ -56,6 +57,7 @@ def provision_initial_users():
         db.close()
 
 def seed_sample_technical_documents():
+    time.sleep(5)  # Allow Uvicorn to bind port and pass initial health checks instantly
     db = SessionLocal()
     try:
         count = db.query(Document).count()
@@ -266,8 +268,22 @@ app.include_router(settings_router.router)
 app.include_router(auth.router)
 app.include_router(admin.router)
 
+@app.get("/", tags=["Root"])
+@app.head("/", tags=["Root"])
+def root():
+    return {
+        "status": "healthy",
+        "app": settings.APP_NAME,
+        "version": settings.APP_VERSION,
+        "environment": settings.ENVIRONMENT,
+        "docs": "/docs",
+        "health": "/health"
+    }
+
 @app.get("/health", tags=["Health"])
 @app.get("/api/health", tags=["Health"])
+@app.head("/health", tags=["Health"])
+@app.head("/api/health", tags=["Health"])
 def health_check():
     return {
         "status": "healthy",
@@ -278,6 +294,6 @@ def health_check():
 
 if __name__ == "__main__":
     import uvicorn
-    port = int(os.environ.get("PORT", 8000))
+    port = int(os.environ.get("PORT", 10000))
     uvicorn.run("backend.main:app", host="0.0.0.0", port=port)
 

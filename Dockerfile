@@ -25,9 +25,9 @@ COPY . .
 ENV PORT=10000
 EXPOSE 8000 10000
 
-# Health check
-HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
-    CMD curl -f http://localhost:${PORT:-10000}/health || exit 1
+# Health check (use 127.0.0.1 to avoid IPv6 localhost resolution mismatch)
+HEALTHCHECK --interval=20s --timeout=5s --start-period=10s --retries=3 \
+    CMD curl -f http://127.0.0.1:${PORT:-10000}/health || curl -f http://127.0.0.1:${PORT:-10000}/ || exit 1
 
 # Execute uvicorn expanding $PORT (crucial for Render which passes dynamic PORT=10000)
 CMD ["sh", "-c", "exec uvicorn backend.main:app --host 0.0.0.0 --port ${PORT:-10000}"]

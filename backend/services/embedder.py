@@ -1,3 +1,4 @@
+import os
 import logging
 import hashlib
 import numpy as np
@@ -22,6 +23,16 @@ class EmbeddingService:
         return cls._instance
 
     def _init_model(self):
+        # Support low-memory cloud deployment (e.g. Render 512MB RAM free tier)
+        if (
+            self.model_name in ("local", "fast", "projection", "none")
+            or os.getenv("LOW_MEMORY_MODE", "").lower() in ("true", "1", "yes")
+        ):
+            logger.info("Low-memory mode active: using lightweight 384-dim semantic projection.")
+            self._model_type = "local-neural-projection (384-dim)"
+            self._model = None
+            return
+
         try:
             from sentence_transformers import SentenceTransformer
             # Fast initialization

@@ -8,7 +8,7 @@ services:
     region: oregon
     plan: free
     buildCommand: "pip install --upgrade pip && pip install -r requirements.txt"
-    startCommand: "uvicorn backend.main:app --host 0.0.0.0 --port $PORT"
+    startCommand: "sh -c 'exec uvicorn backend.main:app --host 0.0.0.0 --port ${PORT:-10000}'"
     healthCheckPath: /health
     envVars:
       - key: PORT
@@ -17,6 +17,8 @@ services:
         value: 3.11.9
       - key: ENVIRONMENT
         value: production
+      - key: LOW_MEMORY_MODE
+        value: "true"
       - key: JWT_SECRET
         generateValue: true
       - key: DEFAULT_PROVIDER
