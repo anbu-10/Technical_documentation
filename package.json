@@ -1,0 +1,11 @@
+{
+  "name": "techdoc-ai-root",
+  "private": true,
+  "workspaces": [
+    "frontend"
+  ],
+  "scripts": {
+    "build": "npm run build --workspace=frontend && node -e \"const fs=require('fs'); fs.cpSync('frontend/dist', 'dist', {recursive: true});\"",
+    "dev": "npm run dev --workspace=frontend"
+  }
+}
